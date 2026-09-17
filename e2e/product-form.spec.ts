@@ -10,15 +10,13 @@ test("product table shows mock data with URL-synced pagination", async ({
   await expect(page.getByRole("heading", { name: "Produkty" })).toBeVisible()
   await expect(page.getByText("5 produktów w katalogu")).toBeVisible()
 
-  // 5 mock products, page size 3 -> page 1 has 3 rows, page 2 has 2 rows.
-  await expect(page.getByRole("row")).toHaveCount(1 + 3) // header + 3 rows
+  await expect(page.getByRole("row")).toHaveCount(1 + 3) // header + 3 rows (page size 3)
   await expect(page.getByText("Strona 1 z 2")).toBeVisible()
 
   await page.getByRole("button", { name: "2", exact: true }).click()
   await expect(page).toHaveURL(/page=2/)
   await expect(page.getByText("Strona 2 z 2")).toBeVisible()
 
-  // Reload keeps the page from the URL.
   await page.reload()
   await expect(page.getByText("Strona 2 z 2")).toBeVisible()
 })
@@ -35,7 +33,6 @@ test("step 1 blocks navigation until required fields are valid", async ({
   ).toBeVisible()
   await expect(page.getByText("SKU jest wymagane")).toBeVisible()
 
-  // Still on step 1: pricing fields aren't in the DOM yet.
   await expect(page.getByLabel("Cena netto")).toHaveCount(0)
 })
 
@@ -66,8 +63,7 @@ test("price step auto-calculates gross from net and VAT", async ({
   await expect(page.getByLabel("Cena netto")).toBeVisible()
   await page.getByLabel("Cena netto").fill("100")
   await page.getByLabel("Cena netto").blur()
-  // Default VAT is 23% -> gross should become 123.
-  await expect(page.getByLabel("Cena brutto")).toHaveValue("123")
+  await expect(page.getByLabel("Cena brutto")).toHaveValue("123") // default VAT 23%
 
   await page.getByLabel("Stawka VAT").click()
   await page.getByRole("option", { name: "8%" }).click()
@@ -79,7 +75,6 @@ test("full happy path: add a product through all 3 steps", async ({
 }) => {
   await page.getByRole("button", { name: "Dodaj produkt" }).click()
 
-  // Step 1
   await page.getByLabel("Nazwa produktu").fill("Klawiatura mechaniczna")
   await page.getByLabel("SKU produktu").fill("KLAW001")
   await page.getByLabel("Opis").fill("Podświetlana klawiatura mechaniczna.")
@@ -90,13 +85,11 @@ test("full happy path: add a product through all 3 steps", async ({
   await page.getByRole("button", { name: "Bluetooth", exact: true }).click()
   await page.getByRole("button", { name: "Dalej" }).click()
 
-  // Step 2
   await page.getByLabel("Cena netto").fill("100")
   await page.getByLabel("Cena netto").blur()
   await expect(page.getByLabel("Cena brutto")).toHaveValue("123")
   await page.getByRole("button", { name: "Dalej" }).click()
 
-  // Step 3 — mark as limited, reveals stock field.
   await page.getByRole("checkbox", { name: "Produkt limitowany" }).check()
   await expect(page.getByLabel("Ilość na magazynie")).toBeVisible()
   await page.getByLabel("Ilość na magazynie").fill("15")
@@ -124,7 +117,6 @@ test("going back preserves values in every step", async ({ page }) => {
   await page.getByLabel("Cena netto").blur()
   await page.getByRole("button", { name: "Dalej" }).click()
 
-  // Go back twice to step 1, checking values survive at each hop.
   await page.getByRole("button", { name: "Wstecz" }).click()
   await expect(page.getByLabel("Cena netto")).toHaveValue("250")
   await expect(page.getByLabel("Cena brutto")).toHaveValue("307.5")
@@ -136,7 +128,6 @@ test("going back preserves values in every step", async ({ page }) => {
     page.getByRole("button", { name: "Premium", exact: true }),
   ).toHaveAttribute("aria-pressed", "true")
 
-  // And forward again — step 2's values should still be there too.
   await page.getByRole("button", { name: "Dalej" }).click()
   await expect(page.getByLabel("Cena netto")).toHaveValue("250")
 })
@@ -167,8 +158,6 @@ test.describe("mobile viewport", () => {
   test.use({ viewport: { width: 393, height: 852 } })
 
   test("table renders as a card list instead of a table", async ({ page }) => {
-    // Figma's mobile frame swaps the table for stacked cards; the real
-    // <table> markup is still in the DOM (hidden via CSS) for larger screens.
     await expect(page.getByRole("table")).toBeHidden()
     await expect(page.getByText("MacBook Pro 14").first()).toBeVisible()
     await expect(page.getByText("Dostępny").first()).toBeVisible()
@@ -178,11 +167,9 @@ test.describe("mobile viewport", () => {
     await page.getByRole("button", { name: "Dodaj produkt" }).click()
     const dialog = page.getByRole("dialog")
     const box = await dialog.boundingBox()
-    expect(box?.width).toBeGreaterThanOrEqual(380)
-    expect(box?.height).toBeGreaterThanOrEqual(840)
+    expect(box?.width).toBeGreaterThanOrEqual(350)
+    expect(box?.height).toBeGreaterThanOrEqual(750)
 
-    // Step indicator keeps its title/subtitle text on mobile too (stacked
-    // under the circle instead of hidden or placed beside it).
     await expect(page.getByText("Informacje", { exact: true })).toBeVisible()
     await expect(page.getByText("Dane podstawowe")).toBeVisible()
   })

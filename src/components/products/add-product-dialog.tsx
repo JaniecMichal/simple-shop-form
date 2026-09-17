@@ -76,12 +76,8 @@ export function AddProductDialog({
     }
   }
 
-  // Gates "Dalej"/"Zapisz produkt": re-runs each field's own validator (so errors
-  // become visible even for fields the user never touched) and then re-checks the
-  // *whole* step against its Zod schema, which also catches cross-field rules that
-  // aren't tied to a single field's onChange (e.g. price/VAT consistency). Only one
-  // `useAppForm` backs all 3 steps, so going back to a previous step never drops
-  // already-entered values — only the currently rendered step fields are affected.
+  // Validates the current step's fields, then re-checks the whole step's Zod
+  // schema (catches cross-field rules no single field's onChange covers).
   async function handlePrimaryAction() {
     const current = STEPS[step]
     await Promise.all(current.fields.map((name) => form.validateField(name, "change")))
@@ -122,10 +118,7 @@ export function AddProductDialog({
         </Button>
       </DialogTrigger>
       <DialogContent
-        // Figma's mobile frame runs the dialog full-screen (no outer margin,
-        // square corners); the desktop frame is the usual centered card. Same
-        // element, switched by breakpoint, with the middle section as the only
-        // scrollable part so the header/steps/footer stay pinned on a short screen.
+        // Full-screen on mobile, centered card on desktop; only the field area scrolls.
         className={cn(
           "top-0 left-0 flex h-dvh max-h-dvh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none p-0",
           "sm:top-1/2 sm:left-1/2 sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-[720px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl",

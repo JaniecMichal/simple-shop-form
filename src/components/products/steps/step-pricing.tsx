@@ -16,11 +16,7 @@ function round2(value: number) {
   return Math.round(value * 100) / 100
 }
 
-// Net, gross and VAT are kept in sync by recalculating the other price field
-// directly inside each field's onChange (not via a validator): editing net or VAT
-// recomputes gross, editing gross recomputes net. This is what keeps the two prices
-// structurally consistent, so the Zod cross-field check in the schema only ever
-// has to catch float-rounding edge cases, not everyday user input.
+// Net/gross/VAT stay in sync via onChange recalculation, not a validator.
 export const StepPricing = withForm({
   defaultValues: defaultProductFormValues,
   render: function Render({ form }) {

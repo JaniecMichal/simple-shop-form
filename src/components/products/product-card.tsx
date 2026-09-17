@@ -3,9 +3,6 @@ import { CATEGORIES, findLabel } from "@/data/product-options"
 import { formatGrossPrice } from "@/lib/format"
 import { StatusBadge } from "@/components/products/status-badge"
 
-// Figma's mobile frame swaps the table for a card per product (name/SKU/status
-// up top, category/price/stock in a muted mini-grid below) rather than just
-// squeezing the table's columns into a narrower viewport.
 export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="rounded-xl border bg-card p-4 shadow-xs">

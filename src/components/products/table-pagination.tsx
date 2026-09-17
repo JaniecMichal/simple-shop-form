@@ -1,6 +1,25 @@
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
+// Windowed with ellipsis gaps so many pages don't overflow the row.
+function getPageNumbers(current: number, total: number): Array<number | "ellipsis"> {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, index) => index + 1)
+  }
+
+  const pages = new Set([1, total, current - 1, current, current + 1])
+  const sorted = [...pages].filter((page) => page >= 1 && page <= total).sort((a, b) => a - b)
+
+  const result: Array<number | "ellipsis"> = []
+  let previous = 0
+  for (const page of sorted) {
+    if (page - previous > 1) result.push("ellipsis")
+    result.push(page)
+    previous = page
+  }
+  return result
+}
 
 export function TablePagination({
   pageIndex,
@@ -15,7 +34,7 @@ export function TablePagination({
   onPageChange: (page: number) => void
   className?: string
 }) {
-  const pageNumbers = Array.from({ length: pageCount }, (_, index) => index + 1)
+  const pageNumbers = getPageNumbers(pageIndex + 1, pageCount)
 
   return (
     <div
@@ -37,16 +56,25 @@ export function TablePagination({
           <ChevronLeft />
           Wstecz
         </Button>
-        {pageNumbers.map((pageNumber) => (
-          <Button
-            key={pageNumber}
-            variant={pageNumber === pageIndex + 1 ? "default" : "ghost"}
-            size="icon-sm"
-            onClick={() => onPageChange(pageNumber)}
-          >
-            {pageNumber}
-          </Button>
-        ))}
+        {pageNumbers.map((pageNumber, index) =>
+          pageNumber === "ellipsis" ? (
+            <span
+              key={`ellipsis-${index}`}
+              className="flex size-8 items-center justify-center text-muted-foreground"
+            >
+              <MoreHorizontal className="size-4" />
+            </span>
+          ) : (
+            <Button
+              key={pageNumber}
+              variant={pageNumber === pageIndex + 1 ? "default" : "ghost"}
+              size="icon-sm"
+              onClick={() => onPageChange(pageNumber)}
+            >
+              {pageNumber}
+            </Button>
+          ),
+        )}
         <Button
           variant="ghost"
           size="sm"

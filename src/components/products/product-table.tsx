@@ -15,22 +15,16 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-// Small on purpose: with the 5 seed products this already produces 2 pages, so
-// pagination is visible and testable without needing extra mock data.
+// Small on purpose: 2 pages from the 5 seed products, so pagination is visible by default.
 const PAGE_SIZE = 3
 
 export function ProductTable({ products }: { products: Product[] }) {
-  // `page` is 1-based and lives in the URL (?page=), per the spec ("odświeżenie
-  // strony zachowuje widok"); TanStack Table's pageIndex is 0-based, so it's
-  // converted at the boundary instead of leaking one convention into the other.
   const [page, setPage] = useQueryState(
     "page",
     parseAsInteger.withDefault(1).withOptions({ clearOnDefault: true }),
   )
 
   const pageCount = Math.max(1, Math.ceil(products.length / PAGE_SIZE))
-  // Clamped so a stale/out-of-range ?page= (e.g. after products shrink) can't
-  // point past the last page instead of erroring.
   const pageIndex = Math.min(Math.max(page - 1, 0), pageCount - 1)
 
   const table = useTable({
@@ -52,8 +46,6 @@ export function ProductTable({ products }: { products: Product[] }) {
   const rows = table.getPaginatedRowModel().rows
   const isMobile = useIsMobile()
 
-  // Figma swaps the table for a card list below `sm` — rendered as one or the
-  // other (not both, hidden via CSS) so pagination only ever exists once.
   if (isMobile) {
     return (
       <div className="flex flex-col gap-3">

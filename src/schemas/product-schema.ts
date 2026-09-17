@@ -46,12 +46,7 @@ export type BasicInfoValues = z.infer<typeof basicInfoObject>
 export type PricingValues = z.infer<typeof pricingObject>
 export type AvailabilityValues = z.infer<typeof availabilityObject>
 
-/**
- * Cross-field rules that a single Zod `.min()`/`.regex()` on one key can't express.
- * Shared between the step schemas' `superRefine` (gates step navigation) and the
- * individual price/quantity fields' `onChangeListenTo` validators (live feedback),
- * so the rule is defined once.
- */
+// Shared by the step schema's superRefine and the fields' onChangeListenTo validators.
 export function pricingIssues(
   values: PricingValues,
 ): Partial<Record<keyof PricingValues, string>> {
