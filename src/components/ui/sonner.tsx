@@ -1,6 +1,6 @@
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
-import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
+import { Check, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
@@ -10,8 +10,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
+        // Figma shows a solid green circle with a white check, not an outlined
+        // icon — lucide's icons are stroke-only, so the fill is built by hand.
         success: (
-          <CircleCheckIcon className="size-4" />
+          <span className="flex size-5 items-center justify-center rounded-full bg-green-600">
+            <Check className="size-3 text-white" strokeWidth={3} />
+          </span>
         ),
         info: (
           <InfoIcon className="size-4" />
