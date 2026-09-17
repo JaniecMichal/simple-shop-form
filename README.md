@@ -4,6 +4,8 @@ Zadanie rekrutacyjne (Frontend/React) dla WorkConnect: trzyetapowy formularz dod
 produktu osadzony w oknie modalnym, oraz tabela produktów z paginacją zsynchronizowaną
 z URL-em. Pełna treść zadania: `docs/Specyfikacja_Zadania.pdf`, projekt UI: `docs/*.fig`.
 
+**Działająca wersja online:** https://simple-shop-form.vercel.app/
+
 ## Stack
 
 - **React 19** + **TypeScript** + **Vite**
@@ -111,4 +113,4 @@ e2e/                          # testy Playwright
 
 ## Deploy
 
-Link do wdrożonej wersji: _(uzupełnić po wdrożeniu, np. na Vercel/Netlify)_.
+Link do wdrożonej wersji (Vercel): https://simple-shop-form.vercel.app/
