@@ -1,8 +1,24 @@
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page } from "@playwright/test"
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/")
 })
+
+async function addProduct(page: Page, sku: string) {
+  await page.getByRole("button", { name: "Dodaj produkt" }).click()
+  await page.getByLabel("Nazwa produktu").fill(`Produkt ${sku}`)
+  await page.getByLabel("SKU produktu").fill(sku)
+  await page.getByLabel("Producent").click()
+  await page.getByRole("option", { name: "Dell" }).click()
+  await page.getByLabel("Kategoria").click()
+  await page.getByRole("option", { name: "Akcesoria" }).click()
+  await page.getByRole("button", { name: "Bluetooth", exact: true }).click()
+  await page.getByRole("button", { name: "Dalej" }).click()
+  await page.getByLabel("Cena netto").fill("50")
+  await page.getByLabel("Cena netto").blur()
+  await page.getByRole("button", { name: "Dalej" }).click()
+  await page.getByRole("button", { name: "Zapisz produkt" }).click()
+}
 
 test("product table shows mock data with URL-synced pagination", async ({
   page,
@@ -163,6 +179,16 @@ test.describe("mobile viewport", () => {
     await expect(page.getByText("Dostępny").first()).toBeVisible()
   })
 
+  test("header stays in one row with the add-product button", async ({ page }) => {
+    const titleBox = await page.getByRole("heading", { name: "Produkty" }).boundingBox()
+    const buttonBox = await page.getByRole("button", { name: "Dodaj produkt" }).boundingBox()
+    expect(titleBox).not.toBeNull()
+    expect(buttonBox).not.toBeNull()
+    const titleCenterY = titleBox!.y + titleBox!.height / 2
+    expect(titleCenterY).toBeGreaterThanOrEqual(buttonBox!.y)
+    expect(titleCenterY).toBeLessThanOrEqual(buttonBox!.y + buttonBox!.height)
+  })
+
   test("add-product dialog runs full-screen", async ({ page }) => {
     await page.getByRole("button", { name: "Dodaj produkt" }).click()
     const dialog = page.getByRole("dialog")
@@ -172,5 +198,20 @@ test.describe("mobile viewport", () => {
 
     await expect(page.getByText("Informacje", { exact: true })).toBeVisible()
     await expect(page.getByText("Dane podstawowe")).toBeVisible()
+  })
+
+  test("pagination stays within the viewport with many pages", async ({ page }) => {
+    for (let i = 1; i <= 20; i++) {
+      await addProduct(page, `PAG${String(i).padStart(3, "0")}`)
+    }
+    await expect(page.getByText("25 produktów w katalogu")).toBeVisible()
+    await expect(page.getByText("Strona 1 z 9")).toBeVisible()
+
+    // Windowed: first, last, and current's neighbors — not every page 1..9.
+    await expect(page.getByRole("button", { name: "9", exact: true })).toBeVisible()
+    await expect(page.getByRole("button", { name: "5", exact: true })).toHaveCount(0)
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(scrollWidth).toBeLessThanOrEqual(393)
   })
 })
