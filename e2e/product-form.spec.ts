@@ -108,6 +108,39 @@ test("full happy path: add a product through all 3 steps", async ({
   await expect(page.getByText("6 produktów w katalogu")).toBeVisible()
 })
 
+test("going back preserves values in every step", async ({ page }) => {
+  await page.getByRole("button", { name: "Dodaj produkt" }).click()
+
+  await page.getByLabel("Nazwa produktu").fill("Trwały Produkt")
+  await page.getByLabel("SKU produktu").fill("TRWALY1")
+  await page.getByLabel("Producent").click()
+  await page.getByRole("option", { name: "Dell" }).click()
+  await page.getByLabel("Kategoria").click()
+  await page.getByRole("option", { name: "Akcesoria" }).click()
+  await page.getByRole("button", { name: "Premium", exact: true }).click()
+  await page.getByRole("button", { name: "Dalej" }).click()
+
+  await page.getByLabel("Cena netto").fill("250")
+  await page.getByLabel("Cena netto").blur()
+  await page.getByRole("button", { name: "Dalej" }).click()
+
+  // Go back twice to step 1, checking values survive at each hop.
+  await page.getByRole("button", { name: "Wstecz" }).click()
+  await expect(page.getByLabel("Cena netto")).toHaveValue("250")
+  await expect(page.getByLabel("Cena brutto")).toHaveValue("307.5")
+
+  await page.getByRole("button", { name: "Wstecz" }).click()
+  await expect(page.getByLabel("Nazwa produktu")).toHaveValue("Trwały Produkt")
+  await expect(page.getByLabel("SKU produktu")).toHaveValue("TRWALY1")
+  await expect(
+    page.getByRole("button", { name: "Premium", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true")
+
+  // And forward again — step 2's values should still be there too.
+  await page.getByRole("button", { name: "Dalej" }).click()
+  await expect(page.getByLabel("Cena netto")).toHaveValue("250")
+})
+
 test("closing the dialog resets the form back to step 1", async ({
   page,
 }) => {
@@ -128,4 +161,29 @@ test("closing the dialog resets the form back to step 1", async ({
   await page.getByRole("button", { name: "Dodaj produkt" }).click()
   await expect(page.getByLabel("Nazwa produktu")).toHaveValue("")
   await expect(page.getByLabel("Cena netto")).toHaveCount(0)
+})
+
+test.describe("mobile viewport", () => {
+  test.use({ viewport: { width: 393, height: 852 } })
+
+  test("table renders as a card list instead of a table", async ({ page }) => {
+    // Figma's mobile frame swaps the table for stacked cards; the real
+    // <table> markup is still in the DOM (hidden via CSS) for larger screens.
+    await expect(page.getByRole("table")).toBeHidden()
+    await expect(page.getByText("MacBook Pro 14").first()).toBeVisible()
+    await expect(page.getByText("Dostępny").first()).toBeVisible()
+  })
+
+  test("add-product dialog runs full-screen", async ({ page }) => {
+    await page.getByRole("button", { name: "Dodaj produkt" }).click()
+    const dialog = page.getByRole("dialog")
+    const box = await dialog.boundingBox()
+    expect(box?.width).toBeGreaterThanOrEqual(380)
+    expect(box?.height).toBeGreaterThanOrEqual(840)
+
+    // Step indicator keeps its title/subtitle text on mobile too (stacked
+    // under the circle instead of hidden or placed beside it).
+    await expect(page.getByText("Informacje", { exact: true })).toBeVisible()
+    await expect(page.getByText("Dane podstawowe")).toBeVisible()
+  })
 })

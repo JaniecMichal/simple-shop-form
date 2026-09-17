@@ -1,9 +1,11 @@
-import { useMemo } from "react"
 import { parseAsInteger, useQueryState } from "nuqs"
 import { flexRender, useTable } from "@tanstack/react-table"
 import type { Product } from "@/types/product"
 import { productColumns } from "@/components/products/product-columns"
 import { productTableFeatures } from "@/components/products/product-table-features"
+import { ProductCard } from "@/components/products/product-card"
+import { TablePagination } from "@/components/products/table-pagination"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Table,
   TableBody,
@@ -12,8 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 
 // Small on purpose: with the 5 seed products this already produces 2 pages, so
 // pagination is visible and testable without needing extra mock data.
@@ -50,10 +50,30 @@ export function ProductTable({ products }: { products: Product[] }) {
   })
 
   const rows = table.getPaginatedRowModel().rows
-  const pageNumbers = useMemo(
-    () => Array.from({ length: pageCount }, (_, index) => index + 1),
-    [pageCount],
-  )
+  const isMobile = useIsMobile()
+
+  // Figma swaps the table for a card list below `sm` — rendered as one or the
+  // other (not both, hidden via CSS) so pagination only ever exists once.
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-3">
+        {rows.length ? (
+          rows.map((row) => <ProductCard key={row.id} product={row.original} />)
+        ) : (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Brak produktów w katalogu.
+          </p>
+        )}
+        <TablePagination
+          pageIndex={pageIndex}
+          pageCount={pageCount}
+          totalCount={products.length}
+          onPageChange={setPage}
+          className="pt-2"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="overflow-hidden rounded-lg border bg-card shadow-xs">
@@ -62,14 +82,8 @@ export function ProductTable({ products }: { products: Product[] }) {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead
-                  key={header.id}
-                  className="h-10 text-muted-foreground"
-                >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext(),
-                  )}
+                <TableHead key={header.id} className="h-10 text-muted-foreground">
+                  {flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -99,41 +113,13 @@ export function ProductTable({ products }: { products: Product[] }) {
         </TableBody>
       </Table>
 
-      <div className="flex flex-col items-center justify-between gap-3 border-t bg-muted/50 px-4 py-4 sm:flex-row">
-        <p className="text-xs text-muted-foreground">
-          Strona {pageIndex + 1} z {pageCount} · {products.length} produktów
-        </p>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={pageIndex === 0}
-            onClick={() => void setPage(pageIndex)}
-          >
-            <ChevronLeft />
-            Wstecz
-          </Button>
-          {pageNumbers.map((pageNumber) => (
-            <Button
-              key={pageNumber}
-              variant={pageNumber === pageIndex + 1 ? "default" : "ghost"}
-              size="icon-sm"
-              onClick={() => void setPage(pageNumber)}
-            >
-              {pageNumber}
-            </Button>
-          ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={pageIndex >= pageCount - 1}
-            onClick={() => void setPage(pageIndex + 2)}
-          >
-            Dalej
-            <ChevronRight />
-          </Button>
-        </div>
-      </div>
+      <TablePagination
+        pageIndex={pageIndex}
+        pageCount={pageCount}
+        totalCount={products.length}
+        onPageChange={setPage}
+        className="border-t bg-muted/50 px-4 py-4"
+      />
     </div>
   )
 }

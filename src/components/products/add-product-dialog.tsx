@@ -9,6 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { StepIndicator, type StepMeta } from "@/components/products/step-indicator"
 import { StepBasicInfo } from "@/components/products/steps/step-basic-info"
 import { StepPricing } from "@/components/products/steps/step-pricing"
@@ -120,7 +121,16 @@ export function AddProductDialog({
           Dodaj produkt
         </Button>
       </DialogTrigger>
-      <DialogContent className="gap-0 p-0 sm:max-w-[720px]">
+      <DialogContent
+        // Figma's mobile frame runs the dialog full-screen (no outer margin,
+        // square corners); the desktop frame is the usual centered card. Same
+        // element, switched by breakpoint, with the middle section as the only
+        // scrollable part so the header/steps/footer stay pinned on a short screen.
+        className={cn(
+          "top-0 left-0 flex h-dvh max-h-dvh w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none p-0",
+          "sm:top-1/2 sm:left-1/2 sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-[720px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl",
+        )}
+      >
         <div className="border-b px-4 py-6">
           <DialogTitle>Dodaj nowy produkt</DialogTitle>
           <DialogDescription className="sr-only">
@@ -132,13 +142,14 @@ export function AddProductDialog({
         <StepIndicator steps={STEPS} currentStep={step} />
 
         <form
+          className="flex min-h-0 flex-1 flex-col"
           onSubmit={(event) => {
             event.preventDefault()
             event.stopPropagation()
             void handlePrimaryAction()
           }}
         >
-          <div className="px-4 py-5">
+          <div className="flex-1 overflow-y-auto px-4 py-5">
             {step === 0 && <StepBasicInfo form={form} />}
             {step === 1 && <StepPricing form={form} />}
             {step === 2 && <StepAvailability form={form} />}

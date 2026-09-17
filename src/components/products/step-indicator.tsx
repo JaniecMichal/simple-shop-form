@@ -15,15 +15,18 @@ export function StepIndicator({
   currentStep: number
 }) {
   return (
-    <div className="flex items-center gap-4 border-b px-4 py-3">
+    // Figma's mobile frame stacks circle-over-text in 3 equal columns with no
+    // connector line; the desktop frame keeps circle-beside-text with a line
+    // between steps. Both are the same markup, switched by breakpoint below.
+    <div className="grid grid-cols-3 gap-3 border-b px-4 py-3 sm:flex sm:items-center sm:gap-4">
       {steps.map((step, index) => {
         const isCompleted = index < currentStep
         const isCurrent = index === currentStep
         const isActive = isCompleted || isCurrent
 
         return (
-          <div key={step.id} className="flex flex-1 items-center gap-4 last:flex-none">
-            <div className="flex items-center gap-2">
+          <div key={step.id} className="flex items-center gap-4 sm:flex-1 last:sm:flex-none">
+            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
               <span
                 className={cn(
                   "flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium",
@@ -34,7 +37,7 @@ export function StepIndicator({
               >
                 {isCompleted ? <Check className="size-4" /> : step.id}
               </span>
-              <span className="hidden flex-col leading-tight sm:flex">
+              <span className="flex flex-col leading-tight">
                 <span
                   className={cn(
                     "text-sm font-medium",
@@ -51,7 +54,7 @@ export function StepIndicator({
             {index < steps.length - 1 && (
               <span
                 className={cn(
-                  "h-px flex-1",
+                  "hidden h-px flex-1 sm:block",
                   isCompleted ? "bg-primary" : "bg-border",
                 )}
               />
