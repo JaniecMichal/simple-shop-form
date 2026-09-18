@@ -11,7 +11,6 @@ export function ProductsPage({
 }) {
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6">
-      {/* Stays in one row even on mobile, unlike the rest of this page. */}
       <div className="flex flex-row items-center justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-semibold text-foreground">Produkty</h1>

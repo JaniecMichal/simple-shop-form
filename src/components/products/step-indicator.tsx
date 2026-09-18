@@ -15,7 +15,6 @@ export function StepIndicator({
   currentStep: number
 }) {
   return (
-    // Mobile: circle-over-text, 3 columns, no line. Desktop: circle-beside-text with a connector.
     <div className="grid grid-cols-3 gap-3 border-b px-4 py-3 sm:flex sm:items-center sm:gap-4">
       {steps.map((step, index) => {
         const isCompleted = index < currentStep

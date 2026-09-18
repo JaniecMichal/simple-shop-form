@@ -2,7 +2,6 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-// Windowed with ellipsis gaps so many pages don't overflow the row.
 function getPageNumbers(current: number, total: number): Array<number | "ellipsis"> {
   if (total <= 7) {
     return Array.from({ length: total }, (_, index) => index + 1)

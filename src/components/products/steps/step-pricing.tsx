@@ -16,7 +16,6 @@ function round2(value: number) {
   return Math.round(value * 100) / 100
 }
 
-// Net/gross/VAT stay in sync via onChange recalculation, not a validator.
 export const StepPricing = withForm({
   defaultValues: defaultProductFormValues,
   render: function Render({ form }) {
